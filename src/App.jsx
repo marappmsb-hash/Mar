@@ -198,7 +198,7 @@ const LandingView = ({ onComplete }) => {
         </div>
       </div>
       <div className={`w-full max-w-xs pb-10 relative z-40 mt-16 transition-all duration-[1500ms] ${mergeButton ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-20 scale-90'}`}>
-        <button onClick={onComplete} className={`group w-full bg-[${LOGO_COLOR}] text-[#0A0A0A] py-5 rounded-2xl font-bold uppercase tracking-[0.35em] text-[10px] shadow-2xl hover:brightness-90 transition-all flex items-center justify-center gap-3 font-sans`}>
+        <button onClick={onComplete} className={`group w-full bg-[${LOGO_COLOR}] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.35em] text-[10px] shadow-2xl hover:brightness-90 transition-all flex items-center justify-center gap-3 font-sans`}>
           Enter the Commons <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -217,15 +217,15 @@ const OnboardingSteps = ({ onFinish }) => {
   const updateData = (key, val) => setFormData(prev => ({ ...prev, [key]: val }));
 
   const questions = [
-    { key: 'name', label: 'Identity', placeholder: 'Your Name...', type: 'text' },
-    { key: 'email_address', label: 'Reach', placeholder: 'Your email address...', type: 'email' },
-    { key: 'phone_number', label: 'Signal', placeholder: 'Your phone number...', type: 'tel' },
-    { key: 'age', label: 'Age', placeholder: 'Your age...', type: 'number' },
-    { key: 'gender', label: 'Self', type: 'select' },
-    { key: 'origin', label: 'Roots', placeholder: 'Nation of heritage...', type: 'text' },
-    { key: 'food', label: 'The Hearth', placeholder: 'A dish or flavor...', type: 'text' },
-    { key: 'music', label: 'Rhythm', placeholder: 'A genre that moves you...', type: 'text' },
-    { key: 'movie', label: 'Cinema', placeholder: 'A film that defines your world...', type: 'text' }
+    { key: 'name', label: 'Identity', hint: 'What should we call you?', placeholder: 'Your name', type: 'text' },
+    { key: 'email_address', label: 'Reach', hint: "We'll send updates here.", placeholder: 'you@email.com', type: 'email' },
+    { key: 'phone_number', label: 'Signal', hint: 'For event texts & notifications.', placeholder: '(555) 123-4567', type: 'tel' },
+    { key: 'age', label: 'Age', hint: 'How old are you?', placeholder: '25', type: 'number' },
+    { key: 'gender', label: 'Self', hint: 'How do you identify?', type: 'select' },
+    { key: 'origin', label: 'Roots', hint: 'Where is your heritage from?', placeholder: 'e.g. Ethiopia, Mexico, Japan', type: 'text' },
+    { key: 'food', label: 'The Hearth', hint: "What's your comfort food?", placeholder: 'e.g. Jollof rice, Ramen, Tacos', type: 'text' },
+    { key: 'music', label: 'Rhythm', hint: 'What genre gets you moving?', placeholder: 'e.g. Afrobeats, Jazz, Cumbia', type: 'text' },
+    { key: 'movie', label: 'Cinema', hint: 'A film that shaped your world.', placeholder: 'e.g. City of God, Spirited Away', type: 'text' }
   ];
 
   const getMatchedCountry = () => {
@@ -383,7 +383,8 @@ const OnboardingSteps = ({ onFinish }) => {
 
           {!showSummaryCard && !isSpreading && (
             <div className="absolute inset-0 z-[110] flex flex-col justify-center p-8 bg-black/10 backdrop-blur-sm rounded-2xl pointer-events-none">
-               <h3 className="text-3xl italic mb-4 animate-fade-in-up">{questions[activeInput].label}</h3>
+               <h3 className="text-3xl italic mb-2 animate-fade-in-up">{questions[activeInput].label}</h3>
+               <p className="text-xs text-stone-400 font-sans mb-4 animate-fade-in-up">{questions[activeInput].hint}</p>
 
                {questions[activeInput].key === 'origin' && getRelevantFacts().length > 0 && (
                  <div className="h-12 mb-6 overflow-hidden relative">
@@ -397,16 +398,23 @@ const OnboardingSteps = ({ onFinish }) => {
 
                <div className="pointer-events-auto">
                 {questions[activeInput].type !== 'select' ? (
-                  <div className="relative">
+                  <div className="relative flex items-end gap-3">
                     <input
                       autoFocus
                       type={questions[activeInput].type}
                       value={formData[questions[activeInput].key]}
                       onChange={e => updateData(questions[activeInput].key, e.target.value)}
-                      className="w-full bg-transparent border-b border-[${LOGO_COLOR}]/40 py-4 text-2xl focus:outline-none placeholder:opacity-10 text-stone-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className={`flex-1 bg-transparent border-b border-[${LOGO_COLOR}]/40 py-4 text-2xl focus:outline-none placeholder:text-stone-700 text-stone-200 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                       placeholder={questions[activeInput].placeholder}
                       onKeyDown={e => e.key === 'Enter' && formData[questions[activeInput].key] && handleNext()}
                     />
+                    <button
+                      onClick={handleNext}
+                      disabled={!formData[questions[activeInput].key]}
+                      className={`shrink-0 w-12 h-12 rounded-xl bg-[${LOGO_COLOR}] text-white flex items-center justify-center transition-all disabled:opacity-20 hover:brightness-90 mb-1`}
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4 animate-fade-in-up">
@@ -555,6 +563,8 @@ export default function App() {
     setUserData(data);
     setView('main');
     setShowWelcome(true);
+
+    if (!supabase) { console.warn('Supabase not configured — skipping insert'); return; }
 
     const { error } = await supabase
       .from('waitlist_signups')
